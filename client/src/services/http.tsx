@@ -9,7 +9,7 @@ class ApiServices {
       timeout: 5000,
     });
 
-    // Request Interceptor: Her istekte token kontrolü yap ve başlığa ekle
+
     this.axiosInstance.interceptors.request.use(
       (config) => {
         if (typeof window !== "undefined") {

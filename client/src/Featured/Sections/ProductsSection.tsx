@@ -43,7 +43,7 @@ const ProductsSection = () => {
   });
 
   return (
-    <section className="py-20 px-[50px] max-w-[1540px] mx-auto bg-white">
+    <section className="py-20 px-12.5 max-w-385 mx-auto bg-white">
       <div className="flex justify-center gap-10 mb-12">
         {tabs.map((tab) => (
           <button
@@ -55,13 +55,13 @@ const ProductsSection = () => {
           >
             {tab}
             {activeTab === tab && (
-              <div className="absolute bottom-0 left-0 w-full h-[2px] bg-black" />
+              <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black" />
             )}
           </button>
         ))}
       </div>
 
-      <div className="min-h-[400px]">
+      <div className="min-h-100">
 
         <AnimatePresence mode="wait">
           {isTabLoading ? (
