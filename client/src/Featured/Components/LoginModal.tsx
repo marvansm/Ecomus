@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { X, ArrowUpRight } from "lucide-react";
+import api from "@/services/api";
+import { toast } from "react-hot-toast";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -15,6 +17,10 @@ const LoginModal: React.FC<LoginModalProps> = ({
   onSwitchToRegister,
 }) => {
   const [isMounted, setIsMounted] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -26,6 +32,29 @@ const LoginModal: React.FC<LoginModalProps> = ({
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await api.PostData("/auth/login", { email, password });
+
+      localStorage.setItem("userToken", res.token);
+      localStorage.setItem("userData", JSON.stringify(res.user));
+
+      toast.success(`Welcome back, ${res.user.name}!`);
+      onClose();
+      window.location.reload();
+    } catch (err: any) {
+      toast.error(
+        err.response?.data?.message || "Login failed. Check your credentials.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!isMounted && !isOpen) return null;
 
@@ -51,12 +80,19 @@ const LoginModal: React.FC<LoginModalProps> = ({
         <h2 className="text-[32px] font-medium text-black mb-10 text-left">
           Log in
         </h2>
-        <form className="space-y-5">
+
+        {error && (
+          <p className="text-red-500 mb-4 text-[14px] font-medium">{error}</p>
+        )}
+
+        <form className="space-y-5" onSubmit={handleSubmit}>
           <div className="relative">
             <input
               type="email"
               className="w-full h-14 px-5 border border-gray-200 rounded-sm focus:border-black outline-none transition-colors text-[16px] placeholder:text-gray-400"
               placeholder="Email *"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
@@ -66,6 +102,8 @@ const LoginModal: React.FC<LoginModalProps> = ({
               type="password"
               className="w-full h-14 px-5 border border-gray-200 rounded-sm focus:border-black outline-none transition-colors text-[16px] placeholder:text-gray-400"
               placeholder="Password *"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
@@ -81,9 +119,10 @@ const LoginModal: React.FC<LoginModalProps> = ({
             <div className="flex items-center gap-8 mt-4">
               <button
                 type="submit"
-                className="w-[200px] h-14 bg-black text-white font-bold text-[16px] transition-all hover:bg-[#db1215] flex items-center justify-center rounded-sm"
+                disabled={loading}
+                className={`w-[200px] h-14 bg-black text-white font-bold text-[16px] transition-all hover:bg-[#db1215] flex items-center justify-center rounded-sm ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
               >
-                Log in
+                {loading ? "Logging in..." : "Log in"}
               </button>
 
               <button

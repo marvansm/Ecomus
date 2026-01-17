@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { X, ArrowUpRight } from "lucide-react";
+import api from "@/services/api";
+import { toast } from "react-hot-toast";
 
 interface RegisterModalProps {
   isOpen: boolean;
@@ -15,6 +17,14 @@ const RegisterModal: React.FC<RegisterModalProps> = ({
   onSwitchToLogin,
 }) => {
   const [isMounted, setIsMounted] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    sirname: "",
+    email: "",
+    password: "",
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -26,6 +36,22 @@ const RegisterModal: React.FC<RegisterModalProps> = ({
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      await api.PostData("/auth/register", formData);
+      toast.success("User registered successfully.");
+      onSwitchToLogin();
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!isMounted && !isOpen) return null;
 
@@ -50,12 +76,21 @@ const RegisterModal: React.FC<RegisterModalProps> = ({
         <h2 className="text-[32px] font-medium text-black mb-10 text-left">
           Register
         </h2>
-        <form className="space-y-5">
+
+        {error && (
+          <p className="text-red-500 mb-4 text-[14px] font-medium">{error}</p>
+        )}
+
+        <form className="space-y-5" onSubmit={handleSubmit}>
           <div className="relative">
             <input
               type="text"
               className="w-full h-14 px-5 border border-gray-200 rounded-sm focus:border-black outline-none transition-colors text-[16px] placeholder:text-gray-400"
-              placeholder="First name"
+              placeholder="Name"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               required
             />
           </div>
@@ -64,7 +99,11 @@ const RegisterModal: React.FC<RegisterModalProps> = ({
             <input
               type="text"
               className="w-full h-14 px-5 border border-gray-200 rounded-sm focus:border-black outline-none transition-colors text-[16px] placeholder:text-gray-400"
-              placeholder="Last name"
+              placeholder="Surname"
+              value={formData.sirname}
+              onChange={(e) =>
+                setFormData({ ...formData, sirname: e.target.value })
+              }
               required
             />
           </div>
@@ -74,6 +113,10 @@ const RegisterModal: React.FC<RegisterModalProps> = ({
               type="email"
               className="w-full h-14 px-5 border border-gray-200 rounded-sm focus:border-black outline-none transition-colors text-[16px] placeholder:text-gray-400"
               placeholder="Email *"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
               required
             />
           </div>
@@ -83,6 +126,10 @@ const RegisterModal: React.FC<RegisterModalProps> = ({
               type="password"
               className="w-full h-14 px-5 border border-gray-200 rounded-sm focus:border-black outline-none transition-colors text-[16px] placeholder:text-gray-400"
               placeholder="Password *"
+              value={formData.password}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
               required
             />
           </div>
@@ -90,9 +137,10 @@ const RegisterModal: React.FC<RegisterModalProps> = ({
           <div className="flex items-center gap-8 mt-10">
             <button
               type="submit"
-              className="w-[200px] h-14 bg-black text-white font-bold text-[16px] transition-all hover:bg-[#db1215] flex items-center justify-center rounded-sm"
+              disabled={loading}
+              className={`w-[200px] h-14 bg-black text-white font-bold text-[16px] transition-all hover:bg-[#db1215] flex items-center justify-center rounded-sm ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              Register
+              {loading ? "Registering..." : "Register"}
             </button>
 
             <button

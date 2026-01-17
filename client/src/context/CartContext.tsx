@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState } from "react";
+import { toast } from "react-hot-toast";
 
 const CartContext = createContext<any>(null);
 
@@ -9,6 +10,13 @@ export const CartProvider = ({ children }: any) => {
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   const addToCart = (product: any) => {
+    const token = localStorage.getItem("userToken");
+
+    if (!token) {
+      toast.error("Please login to add items to cart!");
+      return;
+    }
+
     setCart((prevCart) => {
       const isExist = prevCart.find((item) => item.id === product.id);
       if (isExist) {
@@ -20,7 +28,7 @@ export const CartProvider = ({ children }: any) => {
       }
       return [...prevCart, { ...product, quantity: 1 }];
     });
-    setIsCartOpen(true); 
+    setIsCartOpen(true);
   };
 
   const removeFromCart = (id: any) => {
@@ -42,7 +50,10 @@ export const CartProvider = ({ children }: any) => {
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   const subtotal = cart.reduce((total, item) => {
-    const price = parseFloat(item.price.replace("$", ""));
+    const price =
+      typeof item.price === "string"
+        ? parseFloat(item.price.replace("$", ""))
+        : item.price;
     return total + price * item.quantity;
   }, 0);
 

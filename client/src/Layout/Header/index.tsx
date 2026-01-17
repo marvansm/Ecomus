@@ -2,16 +2,35 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LoginModal from "@/Featured/Components/LoginModal";
 import RegisterModal from "@/Featured/Components/RegisterModal";
 import CartDrawer from "@/Featured/Components/CartDrawer";
 import { useCart } from "@/context/CartContext";
+import { LogOut, User as UserIcon } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 const Header = () => {
   const { cartCount, setIsCartOpen } = useCart();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem("userData");
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("userToken");
+    localStorage.removeItem("userData");
+    setUser(null);
+    toast.success("Logged out successfully");
+
+    window.location.reload();
+  };
 
   const openLogin = () => {
     setIsRegisterOpen(false);
@@ -96,21 +115,47 @@ const Header = () => {
               <path d="m21 21-4.3-4.3" />
             </svg>
           </div>
-          <div className="p-2 cursor-pointer" onClick={openLogin}>
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="black"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </div>
+
+          {user ? (
+            <div className="flex items-center gap-4 ml-2">
+              <Link
+                href="/profile"
+                className="flex items-center gap-2 group cursor-pointer"
+              >
+                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-black font-bold text-[13px] uppercase tracking-wider group-hover:bg-black group-hover:text-white transition-all">
+                  {user.name[0]}
+                  {user.sirname[0]}
+                </div>
+                <span className="text-[13px] font-bold hidden md:block group-hover:text-[#db1215] transition-colors">
+                  {user.name}
+                </span>
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="p-2 hover:text-[#db1215] transition-colors"
+                title="Logout"
+              >
+                <LogOut size={20} strokeWidth={1.5} />
+              </button>
+            </div>
+          ) : (
+            <div className="p-2 cursor-pointer" onClick={openLogin}>
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="black"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </div>
+          )}
+
           <div className="p-2 cursor-pointer relative">
             <svg
               width="22"
