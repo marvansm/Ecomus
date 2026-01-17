@@ -5,10 +5,11 @@ import Link from "next/link";
 import { useState } from "react";
 import LoginModal from "@/Featured/Components/LoginModal";
 import RegisterModal from "@/Featured/Components/RegisterModal";
+import CartDrawer from "@/Featured/Components/CartDrawer";
 import { useCart } from "@/context/CartContext";
 
 const Header = () => {
-  const { cartCount } = useCart();
+  const { cartCount, setIsCartOpen } = useCart();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
 
@@ -127,7 +128,10 @@ const Header = () => {
               0
             </span>
           </div>
-          <div className="p-2 cursor-pointer relative">
+          <div
+            className="p-2 cursor-pointer relative"
+            onClick={() => setIsCartOpen(true)}
+          >
             <svg
               width="22"
               height="22"
@@ -184,6 +188,8 @@ const Header = () => {
         onClose={closeModals}
         onSwitchToLogin={openLogin}
       />
+
+      <CartDrawer />
     </header>
   );
 };
