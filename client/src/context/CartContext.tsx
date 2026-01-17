@@ -1,13 +1,49 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
+import api from "@/services/api";
 
 const CartContext = createContext<any>(null);
 
 export const CartProvider = ({ children }: any) => {
   const [cart, setCart] = useState<any[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  useEffect(() => {
+    const fetchCart = async () => {
+      const token = localStorage.getItem("userToken");
+      if (token) {
+        try {
+          const data = await api.getData("/cart");
+          setCart(data || []);
+        } catch (err) {
+          console.error("Cart fetch error:", err);
+        }
+      }
+    };
+    fetchCart();
+  }, []);
+
+  useEffect(() => {
+    const syncWithBackend = async () => {
+      const token = localStorage.getItem("userToken");
+      if (token && cart.length >= 0 && !isSyncing) {
+        try {
+          setIsSyncing(true);
+          await api.PostData("/cart/sync", { cartItems: cart });
+        } catch (err) {
+          console.error("Cart sync error:", err);
+        } finally {
+          setIsSyncing(false);
+        }
+      }
+    };
+
+    const timeout = setTimeout(syncWithBackend, 500);
+    return () => clearTimeout(timeout);
+  }, [cart]);
 
   const addToCart = (product: any) => {
     const token = localStorage.getItem("userToken");
@@ -18,27 +54,40 @@ export const CartProvider = ({ children }: any) => {
     }
 
     setCart((prevCart) => {
-      const isExist = prevCart.find((item) => item.id === product.id);
+      const isExist = prevCart.find(
+        (item) => item.id === product.id || item.productId === product.id,
+      );
       if (isExist) {
         return prevCart.map((item) =>
-          item.id === product.id
+          item.id === product.id || item.productId === product.id
             ? { ...item, quantity: item.quantity + 1 }
             : item,
         );
       }
-      return [...prevCart, { ...product, quantity: 1 }];
+      return [
+        ...prevCart,
+        {
+          productId: product.id,
+          name: product.name,
+          price: product.price,
+          img: product.img,
+          quantity: 1,
+        },
+      ];
     });
     setIsCartOpen(true);
   };
 
   const removeFromCart = (id: any) => {
-    setCart((prev) => prev.filter((item) => item.id !== id));
+    setCart((prev) =>
+      prev.filter((item) => item.id !== id && item.productId !== id),
+    );
   };
 
   const updateQuantity = (id: any, amount: number) => {
     setCart((prev) =>
       prev.map((item) => {
-        if (item.id === id) {
+        if (item.id === id || item.productId === id) {
           const newQty = item.quantity + amount;
           return { ...item, quantity: newQty > 0 ? newQty : 1 };
         }

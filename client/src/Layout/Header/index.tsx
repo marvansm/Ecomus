@@ -118,18 +118,6 @@ const Header = () => {
 
           {user ? (
             <div className="flex items-center gap-4 ml-2">
-              <Link
-                href="/profile"
-                className="flex items-center gap-2 group cursor-pointer"
-              >
-                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-black font-bold text-[13px] uppercase tracking-wider group-hover:bg-black group-hover:text-white transition-all">
-                  {user.name[0]}
-                  {user.sirname[0]}
-                </div>
-                <span className="text-[13px] font-bold hidden md:block group-hover:text-[#db1215] transition-colors">
-                  {user.name}
-                </span>
-              </Link>
               <button
                 onClick={handleLogout}
                 className="p-2 hover:text-[#db1215] transition-colors"

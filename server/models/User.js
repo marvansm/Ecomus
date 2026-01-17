@@ -16,6 +16,15 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "user",
   },
+  cart: [
+    {
+      productId: { type: String, required: true },
+      name: String,
+      price: String,
+      img: String,
+      quantity: { type: Number, default: 1 },
+    },
+  ],
   createdAt: {
     type: Date,
     default: Date.now,
